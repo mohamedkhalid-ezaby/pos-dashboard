@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <title>متابعة الفروع - عسل مناحل أحمد بن صبحي</title>
+  <style>
+    :root {
+      --primary: #b45309;
+      --primary-dark: #78350f;
+      --accent: #f59e0b;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #1e293b;
+      --muted: #64748b;
+      --green: #059669;
+      --red: #dc2626;
+      --border: #e2e8f0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Arial, sans-serif; }
+    body { background: var(--bg); color: var(--text); padding-bottom: 30px; }
+
+    header {
+      background: linear-gradient(135deg, #b45309, #92400e);
+      color: #fff;
+      padding: 16px 14px;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    header h1 { font-size: 18px; font-weight: 800; margin-bottom: 4px; }
+    header p { font-size: 12px; color: #fef3c7; }
+
+    .container { max-width: 680px; margin: 0 auto; padding: 12px; }
+
+    .filter-card {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      border: 1px solid var(--border);
+      margin-bottom: 12px;
+    }
+    .filter-row { display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; }
+    .filter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+    label { font-size: 12px; font-weight: 700; color: var(--primary-dark); display: block; margin-bottom: 3px; }
+    select, input[type="date"], input[type="month"] {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      font-size: 14px;
+      font-weight: 600;
+      background: #fff;
+      color: var(--text);
+    }
+
+    .mode-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      background: #fef3c7;
+      padding: 4px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+    .mode-btn {
+      border: none;
+      padding: 8px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      background: transparent;
+      color: var(--primary-dark);
+    }
+    .mode-btn.active {
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+
+    .refresh-btn {
+      width: 100%;
+      padding: 11px;
+      background: #16a34a;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      margin-top: 6px;
+    }
+    .refresh-btn:active { opacity: 0.85; }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .kpi-card {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 14px 10px;
+      text-align: center;
+      border: 1px solid var(--border);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .kpi-card.full { grid-column: span 2; background: #ecfdf5; border-color: #a7f3d0; }
+    .kpi-title { font-size: 12px; color: var(--muted); font-weight: 700; margin-bottom: 4px; }
+    .kpi-val { font-size: 22px; font-weight: 900; color: var(--green); }
+    .kpi-val.dark { color: var(--text); font-size: 20px; }
+
+    .section-card {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 12px;
+      border: 1px solid var(--border);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .section-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--primary-dark);
+      margin-bottom: 8px;
+      padding-bottom: 6px;
+      border-bottom: 2px solid #fde68a;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { background: #fef3c7; color: var(--primary-dark); padding: 8px 6px; text-align: center; font-weight: 800; }
+    td { padding: 8px 6px; border-bottom: 1px solid #f1f5f9; text-align: center; }
+    td.right { text-align: right; font-weight: 600; }
+    .neg { color: var(--red); font-weight: 700; }
+    .pos { color: var(--green); font-weight: 700; }
+
+    .status-msg { text-align: center; padding: 14px; font-size: 13px; font-weight: 700; color: var(--primary); }
+    .badge-branch {
+      display: inline-block;
+      background: #fef3c7;
+      color: #92400e;
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🍯 عسل مناحل أحمد بن صبحي</h1>
+  <p>لوحة متابعة مبيعات الفروع الستة لحظة بلحظة</p>
+</header>
+
+<div class="container">
+  <div class="filter-card">
+    <div class="mode-tabs">
+      <button id="btnDayMode" class="mode-btn active" onclick="setMode('day')">📅 تقرير يوم محدد</button>
+      <button id="btnMonthMode" class="mode-btn" onclick="setMode('month')">📆 تقرير الشهر بالكامل</button>
+    </div>
+
+    <div class="filter-row">
+      <div>
+        <label>🏢 اختر الفرع:</label>
+        <select id="branchSelect" onchange="loadData()">
+          <option value="ALL">🌐 كل الفروع الستة المجمعة</option>
+          <option value="فرع مدينة نصر (عباس العقاد)">فرع مدينة نصر (عباس العقاد)</option>
+          <option value="الفرع الرئيسي - 6 أكتوبر (جيل 2000)">الفرع الرئيسي - 6 أكتوبر (جيل 2000)</option>
+          <option value="فرع 6 أكتوبر (الحي الأول)">فرع 6 أكتوبر (الحي الأول)</option>
+          <option value="فرع المقطم">فرع المقطم</option>
+          <option value="فرع الغربية (طنطا)">فرع الغربية (طنطا)</option>
+          <option value="فرع المنوفية">فرع المنوفية</option>
+        </select>
+      </div>
+
+      <div id="dayInputBox">
+        <label>📅 اختر التاريخ:</label>
+        <input type="date" id="dateInput" onchange="loadData()" />
+      </div>
+
+      <div id="monthInputBox" style="display:none;">
+        <label>📆 اختر الشهر:</label>
+        <input type="month" id="monthInput" onchange="loadData()" />
+      </div>
+    </div>
+
+    <button class="refresh-btn" onclick="loadData()">🔄 تحديث البيانات الآن</button>
+  </div>
+
+  <div id="loadingBox" class="status-msg" style="display:none;">⏳ جاري جلب أحدث الأرقام من السحابة...</div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card full">
+      <div class="kpi-title" id="totalLabel">صافي المبيعات</div>
+      <div class="kpi-val" id="kpiTotal">0.00 ج.م</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-title">عدد الفواتير والعمليات</div>
+      <div class="kpi-val dark" id="kpiCount">0</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-title">متوسط قيمة الفاتورة</div>
+      <div class="kpi-val dark" id="kpiAvg">0.00 ج.م</div>
+    </div>
+  </div>
+
+  <!-- جدول مقارنة الفروع (يظهر عند اختيار كل الفروع) -->
+  <div class="section-card" id="branchesBreakdownCard">
+    <div class="section-title">
+      <span>📊 مبيعات كل فرع على حدة</span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th style="text-align:right;">الفرع</th>
+          <th>الفواتير</th>
+          <th>الإجمالي (ج.م)</th>
+        </tr>
+      </thead>
+      <tbody id="branchesTableBody"></tbody>
+    </table>
+  </div>
+
+  <!-- الأصناف الأكثر مبيعاً -->
+  <div class="section-card">
+    <div class="section-title">
+      <span>🍯 الأصناف الأكثر مبيعاً</span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th style="text-align:right;">الصنف</th>
+          <th>الكمية</th>
+          <th>الإجمالي (ج.م)</th>
+        </tr>
+      </thead>
+      <tbody id="itemsTableBody"></tbody>
+    </table>
+  </div>
+
+  <!-- أحدث الفواتير المسجلة -->
+  <div class="section-card">
+    <div class="section-title">
+      <span>🧾 سجل الفواتير والمرتجعات</span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>رقم</th>
+          <th style="text-align:right;">الفرع / الوقت</th>
+          <th>القيمة</th>
+        </tr>
+      </thead>
+      <tbody id="salesTableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  const SUPABASE_URL = "https://epsbpoxskcwupbpevvfy.supabase.co/rest/v1";
+  const SUPABASE_KEY = "sb_publishable_sPmgLe_cFVqPJD0kd6wMOA_NRyWnC3o";
+
+  const ALL_BRANCHES = [
+    "فرع مدينة نصر (عباس العقاد)",
+    "الفرع الرئيسي - 6 أكتوبر (جيل 2000)",
+    "فرع 6 أكتوبر (الحي الأول)",
+    "فرع المقطم",
+    "فرع الغربية (طنطا)",
+    "فرع المنوفية"
+  ];
+
+  let currentMode = "day";
+
+  // ضبط تاريخ اليوم والشهر تلقائياً بتوقيت مصر
+  window.onload = function () {
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, "0");
+    const dd = String(now.getDate()).padStart(2, "0");
+
+    document.getElementById("dateInput").value = `${yyyy}-${mm}-${dd}`;
+    document.getElementById("monthInput").value = `${yyyy}-${mm}`;
+    loadData();
+  };
+
+  function setMode(mode) {
+    currentMode = mode;
+    document.getElementById("btnDayMode").classList.toggle("active", mode === "day");
+    document.getElementById("btnMonthMode").classList.toggle("active", mode === "month");
+    document.getElementById("dayInputBox").style.display = mode === "day" ? "block" : "none";
+    document.getElementById("monthInputBox").style.display = mode === "month" ? "block" : "none";
+    loadData();
+  }
+
+  async function supaGet(endpoint) {
+    const res = await fetch(`${SUPABASE_URL}/${endpoint}`, {
+      headers: {
+        "apikey": SUPABASE_KEY,
+        "Authorization": `Bearer ${SUPABASE_KEY}`,
+        "Content-Type": "application/json"
+      }
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  }
+
+  async function loadData() {
+    const loading = document.getElementById("loadingBox");
+    loading.style.display = "block";
+
+    const branch = document.getElementById("branchSelect").value;
+    const dayVal = document.getElementById("dateInput").value;
+    const monthVal = document.getElementById("monthInput").value;
+
+    try {
+      let query = "select=*";
+      if (currentMode === "day") {
+        query += `&sale_date=eq.${dayVal}`;
+        document.getElementById("totalLabel").innerText = `صافي مبيعات يوم (${dayVal})`;
+      } else {
+        query += `&sale_date=gte.${monthVal}-01&sale_date=lte.${monthVal}-31`;
+        document.getElementById("totalLabel").innerText = `صافي مبيعات شهر (${monthVal})`;
+      }
+
+      if (branch !== "ALL") {
+        query += `&branch_name=eq.${encodeURIComponent(branch)}`;
+      }
+      query += "&order=id.desc";
+
+      const sales = await supaGet(`cloud_sales?${query}`);
+
+      // حساب المؤشرات الرئيسية
+      const totalAmount = sales.reduce((sum, s) => sum + parseFloat(s.total_amount || 0), 0);
+      const count = sales.length;
+      const avg = count > 0 ? (totalAmount / count) : 0;
+
+      document.getElementById("kpiTotal").innerText = `${totalAmount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ج.م`;
+      document.getElementById("kpiCount").innerText = count;
+      document.getElementById("kpiAvg").innerText = `${avg.toFixed(2)} ج.م`;
+
+      // إظهار جدول مقارنة الفروع إذا تم اختيار "كل الفروع"
+      const breakdownCard = document.getElementById("branchesBreakdownCard");
+      if (branch === "ALL") {
+        breakdownCard.style.display = "block";
+        const bStats = {};
+        ALL_BRANCHES.forEach(b => bStats[b] = { cnt: 0, tot: 0 });
+        sales.forEach(s => {
+          const bName = s.branch_name || "غير محدد";
+          if (!bStats[bName]) bStats[bName] = { cnt: 0, tot: 0 };
+          bStats[bName].cnt += 1;
+          bStats[bName].tot += parseFloat(s.total_amount || 0);
+        });
+
+        const bBody = document.getElementById("branchesTableBody");
+        bBody.innerHTML = "";
+        Object.entries(bStats)
+          .sort((a, b) => b[1].tot - a[1].tot)
+          .forEach(([bName, st]) => {
+            bBody.innerHTML += `
+              <tr>
+                <td class="right">${bName}</td>
+                <td>${st.cnt}</td>
+                <td class="pos">${st.tot.toFixed(2)}</td>
+              </tr>`;
+          });
+      } else {
+        breakdownCard.style.display = "none";
+      }
+
+      // جلب تفاصيل الأصناف المباعة لهذه الفواتير
+      const itemsBody = document.getElementById("itemsTableBody");
+      itemsBody.innerHTML = "";
+      if (sales.length > 0) {
+        const ids = sales.slice(0, 200).map(s => s.local_sale_id).join(",");
+        let itemsQuery = `select=branch_name,product_name,quantity,subtotal&local_sale_id=in.(${ids})`;
+        if (branch !== "ALL") {
+          itemsQuery += `&branch_name=eq.${encodeURIComponent(branch)}`;
+        }
+        const items = await supaGet(`cloud_sale_items?${itemsQuery}`);
+
+        const itemMap = {};
+        items.forEach(it => {
+          const name = it.product_name;
+          if (!itemMap[name]) itemMap[name] = { qty: 0, val: 0 };
+          itemMap[name].qty += parseFloat(it.quantity || 0);
+          itemMap[name].val += parseFloat(it.subtotal || 0);
+        });
+
+        const sortedItems = Object.entries(itemMap).sort((a, b) => b[1].val - a[1].val);
+        if (sortedItems.length === 0) {
+          itemsBody.innerHTML = `<tr><td colspan="3">لا توجد أصناف مسجلة</td></tr>`;
+        } else {
+          sortedItems.forEach(([name, data]) => {
+            itemsBody.innerHTML += `
+              <tr>
+                <td class="right">${name}</td>
+                <td>${Number(data.qty.toFixed(3))}</td>
+                <td class="pos">${data.val.toFixed(2)}</td>
+              </tr>`;
+          });
+        }
+      } else {
+        itemsBody.innerHTML = `<tr><td colspan="3">لا توجد مبيعات في هذه الفترة</td></tr>`;
+      }
+
+      // عرض أحدث الفواتير
+      const salesBody = document.getElementById("salesTableBody");
+      salesBody.innerHTML = "";
+      if (sales.length === 0) {
+        salesBody.innerHTML = `<tr><td colspan="3">لا توجد فواتير مسجلة</td></tr>`;
+      } else {
+        sales.slice(0, 40).forEach(s => {
+          const val = parseFloat(s.total_amount || 0);
+          const cls = val < 0 ? "neg" : "pos";
+          const timePart = (s.created_at || "").slice(11, 16);
+          const noteStr = s.notes ? ` - <small style="color:#64748b">${s.notes}</small>` : "";
+          salesBody.innerHTML += `
+            <tr>
+              <td>#${s.local_sale_id}</td>
+              <td class="right">
+                <span class="badge-branch">${s.branch_name || ""}</span>
+                <div style="font-size:11px; color:#64748b; margin-top:2px;">الساعة ${timePart}${noteStr}</div>
+              </td>
+              <td class="${cls}">${val.toFixed(2)}</td>
+            </tr>`;
+        });
+      }
+
+    } catch (err) {
+      console.error(err);
+      alert("تعذر الاتصال بالسحابة. تأكد من الإنترنت أو من إنشاء الجداول في Supabase.");
+    } finally {
+      loading.style.display = "none";
+    }
+  }
+</script>
+
+</body>
+</html>
