@@ -16,259 +16,289 @@
       --text: #1e293b;
       --muted: #64748b;
       --green: #059669;
+      --indigo: #4338ca;
       --red: #dc2626;
       --border: #e2e8f0;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Arial, sans-serif; }
     body { background: var(--bg); color: var(--text); padding-bottom: 30px; }
 
+    #pinOverlay {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(160deg, #451a03 0%, #78350f 55%, #b45309 100%);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .pin-card {
+      background: #ffffff;
+      width: 100%;
+      max-width: 370px;
+      border-radius: 20px;
+      padding: 24px 20px;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+    }
+    .pin-brand {
+      display: inline-block;
+      background: #fef3c7;
+      color: #92400e;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 3px 10px;
+      border-radius: 999px;
+      margin-bottom: 8px;
+    }
+    .pin-card h2 { font-size: 18px; font-weight: 800; color: var(--primary-dark); margin-bottom: 4px; }
+    .pin-card p { font-size: 13px; color: var(--muted); margin-bottom: 16px; font-weight: 600; }
+    .pin-dots { display: flex; justify-content: center; gap: 12px; margin-bottom: 10px; }
+    .pin-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid #cbd5e1; background: #f8fafc; transition: all 0.15s ease; }
+    .pin-dot.filled { background: var(--primary); border-color: var(--primary); transform: scale(1.1); }
+    .pin-error { color: var(--red); font-size: 12px; font-weight: 700; min-height: 18px; margin-bottom: 10px; }
+    .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; direction: ltr; margin-top: 6px; }
+    .key-btn {
+      background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 0;
+      font-size: 20px; font-weight: 800; color: var(--text); cursor: pointer; user-select: none;
+    }
+    .key-btn:active { background: #fde68a; transform: scale(0.95); }
+    .key-btn.action { background: #fef3c7; color: var(--primary-dark); font-size: 15px; }
+    .key-btn.clear { background: #fee2e2; color: var(--red); font-size: 14px; }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-8px); }
+      40%, 80% { transform: translateX(8px); }
+    }
+    .shake { animation: shake 0.35s ease; }
+
+    #appContent { display: none; }
     header {
       background: linear-gradient(135deg, #b45309, #92400e);
       color: #fff;
-      padding: 16px 14px;
-      text-align: center;
+      padding: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       position: sticky;
       top: 0;
       z-index: 50;
       box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     }
-    header h1 { font-size: 18px; font-weight: 800; margin-bottom: 4px; }
-    header p { font-size: 12px; color: #fef3c7; }
-
+    .header-title { text-align: right; }
+    header h1 { font-size: 16px; font-weight: 800; margin-bottom: 2px; }
+    header p { font-size: 11px; color: #fef3c7; }
+    .lock-btn {
+      background: rgba(255, 255, 255, 0.16); border: 1px solid rgba(255, 255, 255, 0.35);
+      color: #fff; padding: 6px 10px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer;
+    }
     .container { max-width: 680px; margin: 0 auto; padding: 12px; }
-
     .filter-card {
-      background: var(--card);
-      border-radius: 12px;
-      padding: 12px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-      border: 1px solid var(--border);
-      margin-bottom: 12px;
+      background: var(--card); border-radius: 12px; padding: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06); border: 1px solid var(--border); margin-bottom: 12px;
     }
     .filter-row { display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; }
-    .filter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-
     label { font-size: 12px; font-weight: 700; color: var(--primary-dark); display: block; margin-bottom: 3px; }
     select, input[type="date"], input[type="month"] {
-      width: 100%;
-      padding: 10px;
-      border-radius: 8px;
-      border: 1px solid #cbd5e1;
-      font-size: 14px;
-      font-weight: 600;
-      background: #fff;
-      color: var(--text);
+      width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1;
+      font-size: 14px; font-weight: 600; background: #fff; color: var(--text);
     }
-
     .mode-tabs {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 6px;
-      background: #fef3c7;
-      padding: 4px;
-      border-radius: 10px;
-      margin-bottom: 10px;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+      background: #fef3c7; padding: 4px; border-radius: 10px; margin-bottom: 10px;
     }
     .mode-btn {
-      border: none;
-      padding: 8px;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-      background: transparent;
-      color: var(--primary-dark);
+      border: none; padding: 8px; border-radius: 8px; font-size: 13px;
+      font-weight: 700; cursor: pointer; background: transparent; color: var(--primary-dark);
     }
-    .mode-btn.active {
-      background: var(--primary);
-      color: #fff;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-    }
-
+    .mode-btn.active { background: var(--primary); color: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
     .refresh-btn {
-      width: 100%;
-      padding: 11px;
-      background: #16a34a;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      font-size: 15px;
-      font-weight: 800;
-      cursor: pointer;
-      margin-top: 6px;
+      width: 100%; padding: 11px; background: #16a34a; color: #fff; border: none;
+      border-radius: 8px; font-size: 15px; font-weight: 800; cursor: pointer; margin-top: 6px;
     }
-    .refresh-btn:active { opacity: 0.85; }
 
-    .kpi-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
-      margin-bottom: 12px;
-    }
+    .kpi-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 12px; }
     .kpi-card {
-      background: var(--card);
-      border-radius: 12px;
-      padding: 14px 10px;
-      text-align: center;
-      border: 1px solid var(--border);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      background: var(--card); border-radius: 12px; padding: 12px 10px; text-align: center;
+      border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
-    .kpi-card.full { grid-column: span 2; background: #ecfdf5; border-color: #a7f3d0; }
+    .kpi-card.full { grid-column: span 2; background: #fffbeb; border-color: #fde68a; }
+    .kpi-card.cash { background: #ecfdf5; border-color: #a7f3d0; }
+    .kpi-card.insta { background: #eef2ff; border-color: #c7d2fe; }
     .kpi-title { font-size: 12px; color: var(--muted); font-weight: 700; margin-bottom: 4px; }
-    .kpi-val { font-size: 22px; font-weight: 900; color: var(--green); }
-    .kpi-val.dark { color: var(--text); font-size: 20px; }
+    .kpi-val { font-size: 21px; font-weight: 900; color: var(--primary-dark); }
+    .kpi-val.green { color: var(--green); font-size: 18px; }
+    .kpi-val.indigo { color: var(--indigo); font-size: 18px; }
+    .kpi-sub { font-size: 11px; color: var(--muted); font-weight: 700; margin-top: 2px; }
 
     .section-card {
-      background: var(--card);
-      border-radius: 12px;
-      padding: 12px;
-      margin-bottom: 12px;
-      border: 1px solid var(--border);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      background: var(--card); border-radius: 12px; padding: 12px; margin-bottom: 12px;
+      border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
     .section-title {
-      font-size: 14px;
-      font-weight: 800;
-      color: var(--primary-dark);
-      margin-bottom: 8px;
-      padding-bottom: 6px;
-      border-bottom: 2px solid #fde68a;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      font-size: 14px; font-weight: 800; color: var(--primary-dark); margin-bottom: 8px;
+      padding-bottom: 6px; border-bottom: 2px solid #fde68a;
     }
-
     table { width: 100%; border-collapse: collapse; font-size: 13px; }
     th { background: #fef3c7; color: var(--primary-dark); padding: 8px 6px; text-align: center; font-weight: 800; }
     td { padding: 8px 6px; border-bottom: 1px solid #f1f5f9; text-align: center; }
     td.right { text-align: right; font-weight: 600; }
     .neg { color: var(--red); font-weight: 700; }
     .pos { color: var(--green); font-weight: 700; }
-
     .status-msg { text-align: center; padding: 14px; font-size: 13px; font-weight: 700; color: var(--primary); }
-    .badge-branch {
-      display: inline-block;
-      background: #fef3c7;
-      color: #92400e;
-      padding: 2px 6px;
-      border-radius: 6px;
-      font-size: 11px;
-      font-weight: 700;
-    }
+    .badge-branch { display: inline-block; background: #fef3c7; color: #92400e; padding: 2px 6px; border-radius: 6px; font-size: 11px; font-weight: 700; }
+    .badge-cash { display: inline-block; background: #dcfce7; color: #166534; padding: 2px 6px; border-radius: 6px; font-size: 11px; font-weight: 700; }
+    .badge-insta { display: inline-block; background: #e0e7ff; color: #3730a3; padding: 2px 6px; border-radius: 6px; font-size: 11px; font-weight: 700; }
+    .powered-footer { text-align: center; font-size: 11px; color: var(--muted); margin-top: 10px; font-weight: 700; }
   </style>
 </head>
 <body>
 
-<header>
-  <h1>🍯 عسل مناحل أحمد بن صبحي</h1>
-  <p>لوحة متابعة مبيعات الفروع الستة لحظة بلحظة</p>
-</header>
+<div id="pinOverlay">
+  <div class="pin-card" id="pinCard">
+    <div class="pin-brand">⚡ MK POS • حماية البيانات</div>
+    <h2>🍯 عسل مناحل أحمد بن صبحي</h2>
+    <p>أدخل الرقم السري المكون من 4 أرقام للدخول</p>
 
-<div class="container">
-  <div class="filter-card">
-    <div class="mode-tabs">
-      <button id="btnDayMode" class="mode-btn active" onclick="setMode('day')">📅 تقرير يوم محدد</button>
-      <button id="btnMonthMode" class="mode-btn" onclick="setMode('month')">📆 تقرير الشهر بالكامل</button>
+    <div class="pin-dots" id="pinDots">
+      <div class="pin-dot"></div>
+      <div class="pin-dot"></div>
+      <div class="pin-dot"></div>
+      <div class="pin-dot"></div>
     </div>
 
-    <div class="filter-row">
-      <div>
-        <label>🏢 اختر الفرع:</label>
-        <select id="branchSelect" onchange="loadData()">
-          <option value="ALL">🌐 كل الفروع الستة المجمعة</option>
-          <option value="فرع مدينة نصر (عباس العقاد)">فرع مدينة نصر (عباس العقاد)</option>
-          <option value="الفرع الرئيسي - 6 أكتوبر (جيل 2000)">الفرع الرئيسي - 6 أكتوبر (جيل 2000)</option>
-          <option value="فرع 6 أكتوبر (الحي الأول)">فرع 6 أكتوبر (الحي الأول)</option>
-          <option value="فرع المقطم">فرع المقطم</option>
-          <option value="فرع الغربية (طنطا)">فرع الغربية (طنطا)</option>
-          <option value="فرع المنوفية">فرع المنوفية</option>
-        </select>
+    <div class="pin-error" id="pinError"></div>
+
+    <div class="keypad">
+      <button type="button" class="key-btn" onclick="pressDigit('1')">1</button>
+      <button type="button" class="key-btn" onclick="pressDigit('2')">2</button>
+      <button type="button" class="key-btn" onclick="pressDigit('3')">3</button>
+      <button type="button" class="key-btn" onclick="pressDigit('4')">4</button>
+      <button type="button" class="key-btn" onclick="pressDigit('5')">5</button>
+      <button type="button" class="key-btn" onclick="pressDigit('6')">6</button>
+      <button type="button" class="key-btn" onclick="pressDigit('7')">7</button>
+      <button type="button" class="key-btn" onclick="pressDigit('8')">8</button>
+      <button type="button" class="key-btn" onclick="pressDigit('9')">9</button>
+      <button type="button" class="key-btn clear" onclick="clearPin()">مسح</button>
+      <button type="button" class="key-btn" onclick="pressDigit('0')">0</button>
+      <button type="button" class="key-btn action" onclick="backspacePin()">⌫</button>
+    </div>
+  </div>
+</div>
+
+<div id="appContent">
+  <header>
+    <div class="header-title">
+      <h1>🍯 عسل مناحل أحمد بن صبحي</h1>
+      <p>لوحة متابعة مبيعات الفروع والمصنع لحظة بلحظة</p>
+    </div>
+    <button type="button" class="lock-btn" onclick="lockApp()">🔒 قفل</button>
+  </header>
+
+  <div class="container">
+    <div class="filter-card">
+      <div class="mode-tabs">
+        <button id="btnDayMode" class="mode-btn active" onclick="setMode('day')">📅 تقرير يوم محدد</button>
+        <button id="btnMonthMode" class="mode-btn" onclick="setMode('month')">📆 تقرير الشهر بالكامل</button>
       </div>
 
-      <div id="dayInputBox">
-        <label>📅 اختر التاريخ:</label>
-        <input type="date" id="dateInput" onchange="loadData()" />
+      <div class="filter-row">
+        <div>
+          <label>🏢 اختر الفرع:</label>
+          <select id="branchSelect" onchange="loadData()">
+            <option value="ALL">🌐 كل الفروع الستة المجمعة</option>
+            <option value="فرع مدينة نصر (عباس العقاد)">فرع مدينة نصر (عباس العقاد)</option>
+            <option value="الفرع الرئيسي - 6 أكتوبر (جيل 2000)">الفرع الرئيسي - 6 أكتوبر (جيل 2000)</option>
+            <option value="فرع 6 أكتوبر (الحي الأول)">فرع 6 أكتوبر (الحي الأول)</option>
+            <option value="فرع المقطم">فرع المقطم</option>
+            <option value="فرع الغربية (طنطا)">فرع الغربية (طنطا)</option>
+            <option value="فرع المنوفية">فرع المنوفية</option>
+          </select>
+        </div>
+
+        <div id="dayInputBox">
+          <label>📅 اختر التاريخ:</label>
+          <input type="date" id="dateInput" onchange="loadData()" />
+        </div>
+
+        <div id="monthInputBox" style="display:none;">
+          <label>📆 اختر الشهر:</label>
+          <input type="month" id="monthInput" onchange="loadData()" />
+        </div>
       </div>
 
-      <div id="monthInputBox" style="display:none;">
-        <label>📆 اختر الشهر:</label>
-        <input type="month" id="monthInput" onchange="loadData()" />
+      <button class="refresh-btn" onclick="loadData()">🔄 تحديث البيانات الآن</button>
+    </div>
+
+    <div id="loadingBox" class="status-msg" style="display:none;">⏳ جاري جلب أحدث الأرقام من السحابة...</div>
+
+    <div class="kpi-grid">
+      <div class="kpi-card full">
+        <div class="kpi-title" id="totalLabel">صافي المبيعات</div>
+        <div class="kpi-val" id="kpiTotal">0.00 ج.م</div>
+        <div class="kpi-sub" id="kpiCountSub">إجمالي العمليات: 0</div>
+      </div>
+      <div class="kpi-card cash">
+        <div class="kpi-title">💵 مبيعات الكاش</div>
+        <div class="kpi-val green" id="kpiCash">0.00 ج.م</div>
+        <div class="kpi-sub" id="kpiCashCnt">0 فاتورة</div>
+      </div>
+      <div class="kpi-card insta">
+        <div class="kpi-title">📱 مبيعات انستا باي</div>
+        <div class="kpi-val indigo" id="kpiInsta">0.00 ج.م</div>
+        <div class="kpi-sub" id="kpiInstaCnt">0 فاتورة</div>
       </div>
     </div>
 
-    <button class="refresh-btn" onclick="loadData()">🔄 تحديث البيانات الآن</button>
-  </div>
+    <div class="section-card" id="branchesBreakdownCard">
+      <div class="section-title">📊 مبيعات كل فرع على حدة</div>
+      <table>
+        <thead>
+          <tr>
+            <th style="text-align:right;">الفرع</th>
+            <th>الفواتير</th>
+            <th>الإجمالي (ج.م)</th>
+          </tr>
+        </thead>
+        <tbody id="branchesTableBody"></tbody>
+      </table>
+    </div>
 
-  <div id="loadingBox" class="status-msg" style="display:none;">⏳ جاري جلب أحدث الأرقام من السحابة...</div>
+    <div class="section-card">
+      <div class="section-title">🍯 الأصناف الأكثر مبيعاً</div>
+      <table>
+        <thead>
+          <tr>
+            <th style="text-align:right;">الصنف</th>
+            <th>الكمية</th>
+            <th>الإجمالي (ج.م)</th>
+          </tr>
+        </thead>
+        <tbody id="itemsTableBody"></tbody>
+      </table>
+    </div>
 
-  <div class="kpi-grid">
-    <div class="kpi-card full">
-      <div class="kpi-title" id="totalLabel">صافي المبيعات</div>
-      <div class="kpi-val" id="kpiTotal">0.00 ج.م</div>
+    <div class="section-card">
+      <div class="section-title">🧾 سجل الفواتير (كاش / انستا باي)</div>
+      <table>
+        <thead>
+          <tr>
+            <th>رقم</th>
+            <th style="text-align:right;">الفرع / الدفع</th>
+            <th>القيمة</th>
+          </tr>
+        </thead>
+        <tbody id="salesTableBody"></tbody>
+      </table>
     </div>
-    <div class="kpi-card">
-      <div class="kpi-title">عدد الفواتير والعمليات</div>
-      <div class="kpi-val dark" id="kpiCount">0</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-title">متوسط قيمة الفاتورة</div>
-      <div class="kpi-val dark" id="kpiAvg">0.00 ج.م</div>
-    </div>
-  </div>
 
-  <!-- جدول مقارنة الفروع (يظهر عند اختيار كل الفروع) -->
-  <div class="section-card" id="branchesBreakdownCard">
-    <div class="section-title">
-      <span>📊 مبيعات كل فرع على حدة</span>
-    </div>
-    <table>
-      <thead>
-        <tr>
-          <th style="text-align:right;">الفرع</th>
-          <th>الفواتير</th>
-          <th>الإجمالي (ج.م)</th>
-        </tr>
-      </thead>
-      <tbody id="branchesTableBody"></tbody>
-    </table>
-  </div>
-
-  <!-- الأصناف الأكثر مبيعاً -->
-  <div class="section-card">
-    <div class="section-title">
-      <span>🍯 الأصناف الأكثر مبيعاً</span>
-    </div>
-    <table>
-      <thead>
-        <tr>
-          <th style="text-align:right;">الصنف</th>
-          <th>الكمية</th>
-          <th>الإجمالي (ج.م)</th>
-        </tr>
-      </thead>
-      <tbody id="itemsTableBody"></tbody>
-    </table>
-  </div>
-
-  <!-- أحدث الفواتير المسجلة -->
-  <div class="section-card">
-    <div class="section-title">
-      <span>🧾 سجل الفواتير والمرتجعات</span>
-    </div>
-    <table>
-      <thead>
-        <tr>
-          <th>رقم</th>
-          <th style="text-align:right;">الفرع / الوقت</th>
-          <th>القيمة</th>
-        </tr>
-      </thead>
-      <tbody id="salesTableBody"></tbody>
-    </table>
+    <div class="powered-footer">Powered by MK POS</div>
   </div>
 </div>
 
 <script>
+  const DASHBOARD_PIN = "2026";
   const SUPABASE_URL = "https://epsbpoxskcwupbpevvfy.supabase.co/rest/v1";
   const SUPABASE_KEY = "sb_publishable_sPmgLe_cFVqPJD0kd6wMOA_NRyWnC3o";
 
@@ -281,19 +311,89 @@
     "فرع المنوفية"
   ];
 
+  let enteredPin = "";
   let currentMode = "day";
+  let isUnlocked = false;
 
-  // ضبط تاريخ اليوم والشهر تلقائياً بتوقيت مصر
+  function updatePinDots() {
+    document.querySelectorAll("#pinDots .pin-dot").forEach((dot, idx) => {
+      dot.classList.toggle("filled", idx < enteredPin.length);
+    });
+  }
+
+  function pressDigit(digit) {
+    if (enteredPin.length >= 4) return;
+    document.getElementById("pinError").innerText = "";
+    enteredPin += digit;
+    updatePinDots();
+    if (enteredPin.length === 4) setTimeout(verifyPin, 120);
+  }
+
+  function backspacePin() {
+    if (enteredPin.length > 0) {
+      enteredPin = enteredPin.slice(0, -1);
+      updatePinDots();
+    }
+  }
+
+  function clearPin() {
+    enteredPin = "";
+    document.getElementById("pinError").innerText = "";
+    updatePinDots();
+  }
+
+  function verifyPin() {
+    if (enteredPin === DASHBOARD_PIN) {
+      sessionStorage.setItem("bensobhy_pin_ok", "1");
+      unlockApp();
+    } else {
+      const card = document.getElementById("pinCard");
+      document.getElementById("pinError").innerText = "❌ الرقم السري غير صحيح، حاول مرة أخرى";
+      card.classList.remove("shake");
+      void card.offsetWidth;
+      card.classList.add("shake");
+      enteredPin = "";
+      updatePinDots();
+    }
+  }
+
+  function unlockApp() {
+    isUnlocked = true;
+    document.getElementById("pinOverlay").style.display = "none";
+    document.getElementById("appContent").style.display = "block";
+    initDatesAndLoad();
+  }
+
+  function lockApp() {
+    isUnlocked = false;
+    enteredPin = "";
+    updatePinDots();
+    document.getElementById("pinError").innerText = "";
+    sessionStorage.removeItem("bensobhy_pin_ok");
+    document.getElementById("appContent").style.display = "none";
+    document.getElementById("pinOverlay").style.display = "flex";
+  }
+
+  document.addEventListener("keydown", function (e) {
+    if (isUnlocked) return;
+    if (e.key >= "0" && e.key <= "9") pressDigit(e.key);
+    else if (e.key === "Backspace") backspacePin();
+    else if (e.key === "Escape" || e.key === "Delete") clearPin();
+  });
+
   window.onload = function () {
+    if (sessionStorage.getItem("bensobhy_pin_ok") === "1") unlockApp();
+  };
+
+  function initDatesAndLoad() {
     const now = new Date();
     const yyyy = now.getFullYear();
     const mm = String(now.getMonth() + 1).padStart(2, "0");
     const dd = String(now.getDate()).padStart(2, "0");
-
-    document.getElementById("dateInput").value = `${yyyy}-${mm}-${dd}`;
-    document.getElementById("monthInput").value = `${yyyy}-${mm}`;
+    if (!document.getElementById("dateInput").value) document.getElementById("dateInput").value = `${yyyy}-${mm}-${dd}`;
+    if (!document.getElementById("monthInput").value) document.getElementById("monthInput").value = `${yyyy}-${mm}`;
     loadData();
-  };
+  }
 
   function setMode(mode) {
     currentMode = mode;
@@ -317,6 +417,7 @@
   }
 
   async function loadData() {
+    if (!isUnlocked) return;
     const loading = document.getElementById("loadingBox");
     loading.style.display = "block";
 
@@ -334,23 +435,26 @@
         document.getElementById("totalLabel").innerText = `صافي مبيعات شهر (${monthVal})`;
       }
 
-      if (branch !== "ALL") {
-        query += `&branch_name=eq.${encodeURIComponent(branch)}`;
-      }
+      if (branch !== "ALL") query += `&branch_name=eq.${encodeURIComponent(branch)}`;
       query += "&order=id.desc";
 
       const sales = await supaGet(`cloud_sales?${query}`);
 
-      // حساب المؤشرات الرئيسية
       const totalAmount = sales.reduce((sum, s) => sum + parseFloat(s.total_amount || 0), 0);
-      const count = sales.length;
-      const avg = count > 0 ? (totalAmount / count) : 0;
+      const cashSales = sales.filter(s => (s.payment_method || "كاش") === "كاش");
+      const instaSales = sales.filter(s => (s.payment_method || "") === "انستا باي");
+      const cashTotal = cashSales.reduce((sum, s) => sum + parseFloat(s.total_amount || 0), 0);
+      const instaTotal = instaSales.reduce((sum, s) => sum + parseFloat(s.total_amount || 0), 0);
 
       document.getElementById("kpiTotal").innerText = `${totalAmount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ج.م`;
-      document.getElementById("kpiCount").innerText = count;
-      document.getElementById("kpiAvg").innerText = `${avg.toFixed(2)} ج.م`;
+      document.getElementById("kpiCountSub").innerText = `إجمالي الفواتير: ${sales.length}`;
 
-      // إظهار جدول مقارنة الفروع إذا تم اختيار "كل الفروع"
+      document.getElementById("kpiCash").innerText = `${cashTotal.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ج.م`;
+      document.getElementById("kpiCashCnt").innerText = `${cashSales.length} فاتورة`;
+
+      document.getElementById("kpiInsta").innerText = `${instaTotal.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ج.م`;
+      document.getElementById("kpiInstaCnt").innerText = `${instaSales.length} فاتورة`;
+
       const breakdownCard = document.getElementById("branchesBreakdownCard");
       if (branch === "ALL") {
         breakdownCard.style.display = "block";
@@ -368,26 +472,18 @@
         Object.entries(bStats)
           .sort((a, b) => b[1].tot - a[1].tot)
           .forEach(([bName, st]) => {
-            bBody.innerHTML += `
-              <tr>
-                <td class="right">${bName}</td>
-                <td>${st.cnt}</td>
-                <td class="pos">${st.tot.toFixed(2)}</td>
-              </tr>`;
+            bBody.innerHTML += `<tr><td class="right">${bName}</td><td>${st.cnt}</td><td class="pos">${st.tot.toFixed(2)}</td></tr>`;
           });
       } else {
         breakdownCard.style.display = "none";
       }
 
-      // جلب تفاصيل الأصناف المباعة لهذه الفواتير
       const itemsBody = document.getElementById("itemsTableBody");
       itemsBody.innerHTML = "";
       if (sales.length > 0) {
         const ids = sales.slice(0, 200).map(s => s.local_sale_id).join(",");
         let itemsQuery = `select=branch_name,product_name,quantity,subtotal&local_sale_id=in.(${ids})`;
-        if (branch !== "ALL") {
-          itemsQuery += `&branch_name=eq.${encodeURIComponent(branch)}`;
-        }
+        if (branch !== "ALL") itemsQuery += `&branch_name=eq.${encodeURIComponent(branch)}`;
         const items = await supaGet(`cloud_sale_items?${itemsQuery}`);
 
         const itemMap = {};
@@ -403,49 +499,43 @@
           itemsBody.innerHTML = `<tr><td colspan="3">لا توجد أصناف مسجلة</td></tr>`;
         } else {
           sortedItems.forEach(([name, data]) => {
-            itemsBody.innerHTML += `
-              <tr>
-                <td class="right">${name}</td>
-                <td>${Number(data.qty.toFixed(3))}</td>
-                <td class="pos">${data.val.toFixed(2)}</td>
-              </tr>`;
+            itemsBody.innerHTML += `<tr><td class="right">${name}</td><td>${Number(data.qty.toFixed(3))}</td><td class="pos">${data.val.toFixed(2)}</td></tr>`;
           });
         }
       } else {
         itemsBody.innerHTML = `<tr><td colspan="3">لا توجد مبيعات في هذه الفترة</td></tr>`;
       }
 
-      // عرض أحدث الفواتير
       const salesBody = document.getElementById("salesTableBody");
       salesBody.innerHTML = "";
       if (sales.length === 0) {
         salesBody.innerHTML = `<tr><td colspan="3">لا توجد فواتير مسجلة</td></tr>`;
       } else {
-        sales.slice(0, 40).forEach(s => {
+        sales.slice(0, 50).forEach(s => {
           const val = parseFloat(s.total_amount || 0);
           const cls = val < 0 ? "neg" : "pos";
+          const pm = s.payment_method || "كاش";
+          const pmBadge = pm === "انستا باي" ? `<span class="badge-insta">📱 انستا باي</span>` : `<span class="badge-cash">💵 كاش</span>`;
           const timePart = (s.created_at || "").slice(11, 16);
           const noteStr = s.notes ? ` - <small style="color:#64748b">${s.notes}</small>` : "";
           salesBody.innerHTML += `
             <tr>
               <td>#${s.local_sale_id}</td>
               <td class="right">
-                <span class="badge-branch">${s.branch_name || ""}</span>
+                <span class="badge-branch">${s.branch_name || ""}</span> ${pmBadge}
                 <div style="font-size:11px; color:#64748b; margin-top:2px;">الساعة ${timePart}${noteStr}</div>
               </td>
               <td class="${cls}">${val.toFixed(2)}</td>
             </tr>`;
         });
       }
-
     } catch (err) {
       console.error(err);
-      alert("تعذر الاتصال بالسحابة. تأكد من الإنترنت أو من إنشاء الجداول في Supabase.");
+      alert("تعذر الاتصال بالسحابة. تأكد من اتصال الإنترنت.");
     } finally {
       loading.style.display = "none";
     }
   }
 </script>
-
 </body>
 </html>
