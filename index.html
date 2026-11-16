@@ -1,541 +1,320 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="mobile-web-app-capable" content="yes" />
-  <title>متابعة الفروع - عسل مناحل أحمد بن صبحي</title>
-  <style>
-    :root {
-      --primary: #b45309;
-      --primary-dark: #78350f;
-      --accent: #f59e0b;
-      --bg: #f8fafc;
-      --card: #ffffff;
-      --text: #1e293b;
-      --muted: #64748b;
-      --green: #059669;
-      --indigo: #4338ca;
-      --red: #dc2626;
-      --border: #e2e8f0;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Arial, sans-serif; }
-    body { background: var(--bg); color: var(--text); padding-bottom: 30px; }
-
-    #pinOverlay {
-      position: fixed;
-      inset: 0;
-      background: linear-gradient(160deg, #451a03 0%, #78350f 55%, #b45309 100%);
-      z-index: 9999;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
-    }
-    .pin-card {
-      background: #ffffff;
-      width: 100%;
-      max-width: 370px;
-      border-radius: 20px;
-      padding: 24px 20px;
-      text-align: center;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
-    }
-    .pin-brand {
-      display: inline-block;
-      background: #fef3c7;
-      color: #92400e;
-      font-size: 11px;
-      font-weight: 800;
-      padding: 3px 10px;
-      border-radius: 999px;
-      margin-bottom: 8px;
-    }
-    .pin-card h2 { font-size: 18px; font-weight: 800; color: var(--primary-dark); margin-bottom: 4px; }
-    .pin-card p { font-size: 13px; color: var(--muted); margin-bottom: 16px; font-weight: 600; }
-    .pin-dots { display: flex; justify-content: center; gap: 12px; margin-bottom: 10px; }
-    .pin-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid #cbd5e1; background: #f8fafc; transition: all 0.15s ease; }
-    .pin-dot.filled { background: var(--primary); border-color: var(--primary); transform: scale(1.1); }
-    .pin-error { color: var(--red); font-size: 12px; font-weight: 700; min-height: 18px; margin-bottom: 10px; }
-    .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; direction: ltr; margin-top: 6px; }
-    .key-btn {
-      background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 0;
-      font-size: 20px; font-weight: 800; color: var(--text); cursor: pointer; user-select: none;
-    }
-    .key-btn:active { background: #fde68a; transform: scale(0.95); }
-    .key-btn.action { background: #fef3c7; color: var(--primary-dark); font-size: 15px; }
-    .key-btn.clear { background: #fee2e2; color: var(--red); font-size: 14px; }
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      20%, 60% { transform: translateX(-8px); }
-      40%, 80% { transform: translateX(8px); }
-    }
-    .shake { animation: shake 0.35s ease; }
-
-    #appContent { display: none; }
-    header {
-      background: linear-gradient(135deg, #b45309, #92400e);
-      color: #fff;
-      padding: 14px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    }
-    .header-title { text-align: right; }
-    header h1 { font-size: 16px; font-weight: 800; margin-bottom: 2px; }
-    header p { font-size: 11px; color: #fef3c7; }
-    .lock-btn {
-      background: rgba(255, 255, 255, 0.16); border: 1px solid rgba(255, 255, 255, 0.35);
-      color: #fff; padding: 6px 10px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer;
-    }
-    .container { max-width: 680px; margin: 0 auto; padding: 12px; }
-    .filter-card {
-      background: var(--card); border-radius: 12px; padding: 12px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.06); border: 1px solid var(--border); margin-bottom: 12px;
-    }
-    .filter-row { display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; }
-    label { font-size: 12px; font-weight: 700; color: var(--primary-dark); display: block; margin-bottom: 3px; }
-    select, input[type="date"], input[type="month"] {
-      width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1;
-      font-size: 14px; font-weight: 600; background: #fff; color: var(--text);
-    }
-    .mode-tabs {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
-      background: #fef3c7; padding: 4px; border-radius: 10px; margin-bottom: 10px;
-    }
-    .mode-btn {
-      border: none; padding: 8px; border-radius: 8px; font-size: 13px;
-      font-weight: 700; cursor: pointer; background: transparent; color: var(--primary-dark);
-    }
-    .mode-btn.active { background: var(--primary); color: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
-    .refresh-btn {
-      width: 100%; padding: 11px; background: #16a34a; color: #fff; border: none;
-      border-radius: 8px; font-size: 15px; font-weight: 800; cursor: pointer; margin-top: 6px;
-    }
-
-    .kpi-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 12px; }
-    .kpi-card {
-      background: var(--card); border-radius: 12px; padding: 12px 10px; text-align: center;
-      border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
-    .kpi-card.full { grid-column: span 2; background: #fffbeb; border-color: #fde68a; }
-    .kpi-card.cash { background: #ecfdf5; border-color: #a7f3d0; }
-    .kpi-card.insta { background: #eef2ff; border-color: #c7d2fe; }
-    .kpi-title { font-size: 12px; color: var(--muted); font-weight: 700; margin-bottom: 4px; }
-    .kpi-val { font-size: 21px; font-weight: 900; color: var(--primary-dark); }
-    .kpi-val.green { color: var(--green); font-size: 18px; }
-    .kpi-val.indigo { color: var(--indigo); font-size: 18px; }
-    .kpi-sub { font-size: 11px; color: var(--muted); font-weight: 700; margin-top: 2px; }
-
-    .section-card {
-      background: var(--card); border-radius: 12px; padding: 12px; margin-bottom: 12px;
-      border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
-    .section-title {
-      font-size: 14px; font-weight: 800; color: var(--primary-dark); margin-bottom: 8px;
-      padding-bottom: 6px; border-bottom: 2px solid #fde68a;
-    }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    th { background: #fef3c7; color: var(--primary-dark); padding: 8px 6px; text-align: center; font-weight: 800; }
-    td { padding: 8px 6px; border-bottom: 1px solid #f1f5f9; text-align: center; }
-    td.right { text-align: right; font-weight: 600; }
-    .neg { color: var(--red); font-weight: 700; }
-    .pos { color: var(--green); font-weight: 700; }
-    .status-msg { text-align: center; padding: 14px; font-size: 13px; font-weight: 700; color: var(--primary); }
-    .badge-branch { display: inline-block; background: #fef3c7; color: #92400e; padding: 2px 6px; border-radius: 6px; font-size: 11px; font-weight: 700; }
-    .badge-cash { display: inline-block; background: #dcfce7; color: #166534; padding: 2px 6px; border-radius: 6px; font-size: 11px; font-weight: 700; }
-    .badge-insta { display: inline-block; background: #e0e7ff; color: #3730a3; padding: 2px 6px; border-radius: 6px; font-size: 11px; font-weight: 700; }
-    .powered-footer { text-align: center; font-size: 11px; color: var(--muted); margin-top: 10px; font-weight: 700; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>عسل مناحل أحمد بن صبحي - لوحة متابعة المبيعات</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
+        body { background-color: #f4f6f9; color: #1e293b; padding-bottom: 30px; }
+        .header {
+            background: linear-gradient(135deg, #b45309, #78350f);
+            color: #fff; text-align: center; padding: 20px 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .header h1 { font-size: 1.35rem; font-weight: 800; margin-bottom: 4px; }
+        .header p { font-size: 0.85rem; opacity: 0.9; }
+        .container { max-width: 650px; margin: 15px auto; padding: 0 12px; }
+        .card {
+            background: #fff; border-radius: 14px; padding: 16px;
+            margin-bottom: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .tabs { display: flex; gap: 8px; background: #fef3c7; padding: 6px; border-radius: 10px; margin-bottom: 14px; }
+        .tab-btn {
+            flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: 700;
+            font-size: 0.9rem; cursor: pointer; background: transparent; color: #78350f; transition: 0.2s;
+        }
+        .tab-btn.active { background: #92400e; color: #fff; }
+        label { display: block; font-size: 0.85rem; font-weight: 700; color: #475569; margin-bottom: 5px; }
+        select, input[type="date"], input[type="month"] {
+            width: 100%; padding: 10px 12px; border: 1.5px solid #cbd5e1; border-radius: 10px;
+            font-size: 0.95rem; font-weight: 600; margin-bottom: 12px; background: #fff;
+        }
+        .btn-refresh {
+            width: 100%; padding: 12px; background: #16a34a; color: #fff; border: none;
+            border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer;
+        }
+        .btn-refresh:active { transform: scale(0.98); }
+        .kpi-main {
+            background: #ecfdf5; border: 1.5px solid #a7f3d0; text-align: center;
+            padding: 18px; border-radius: 14px; margin-bottom: 12px;
+        }
+        .kpi-main .title { font-size: 0.9rem; color: #065f46; font-weight: 700; }
+        .kpi-main .val { font-size: 2rem; font-weight: 800; color: #059669; margin-top: 4px; }
+        .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+        .kpi-box {
+            background: #fff; border-radius: 12px; padding: 14px 10px; text-align: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04); border: 1px solid #e2e8f0;
+        }
+        .kpi-box.cash { background: #eff6ff; border-color: #bfdbfe; }
+        .kpi-box.insta { background: #f5f3ff; border-color: #ddd6fe; }
+        .kpi-box .title { font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 4px; }
+        .kpi-box.cash .title { color: #1e40af; }
+        .kpi-box.insta .title { color: #5b21b6; }
+        .kpi-box .val { font-size: 1.25rem; font-weight: 800; color: #0f172a; }
+        .kpi-box.cash .val { color: #1d4ed8; }
+        .kpi-box.insta .val { color: #6d28d9; }
+        .kpi-box .sub { font-size: 0.75rem; color: #64748b; margin-top: 2px; font-weight: 600; }
+        .sec-title { font-size: 1rem; font-weight: 800; color: #1e293b; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+        th { background: #fef3c7; color: #78350f; padding: 10px 8px; text-align: right; font-weight: 700; }
+        td { padding: 10px 8px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+        .badge-branch {
+            display: inline-block; background: #fef3c7; color: #92400e;
+            padding: 2px 8px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; margin-bottom: 3px;
+        }
+        .badge-pay {
+            display: inline-block; padding: 2px 8px; border-radius: 6px;
+            font-size: 0.75rem; font-weight: 700; margin-top: 2px;
+        }
+        .pay-cash { background: #dbeafe; color: #1e40af; }
+        .pay-insta { background: #ede9fe; color: #5b21b6; }
+        .amount-pos { color: #059669; font-weight: 800; }
+        .amount-neg { color: #dc2626; font-weight: 800; }
+        .time-txt { font-size: 0.75rem; color: #64748b; }
+    </style>
 </head>
 <body>
 
-<div id="pinOverlay">
-  <div class="pin-card" id="pinCard">
-    <div class="pin-brand">⚡ MK POS • حماية البيانات</div>
-    <h2>🍯 عسل مناحل أحمد بن صبحي</h2>
-    <p>أدخل الرقم السري المكون من 4 أرقام للدخول</p>
-
-    <div class="pin-dots" id="pinDots">
-      <div class="pin-dot"></div>
-      <div class="pin-dot"></div>
-      <div class="pin-dot"></div>
-      <div class="pin-dot"></div>
-    </div>
-
-    <div class="pin-error" id="pinError"></div>
-
-    <div class="keypad">
-      <button type="button" class="key-btn" onclick="pressDigit('1')">1</button>
-      <button type="button" class="key-btn" onclick="pressDigit('2')">2</button>
-      <button type="button" class="key-btn" onclick="pressDigit('3')">3</button>
-      <button type="button" class="key-btn" onclick="pressDigit('4')">4</button>
-      <button type="button" class="key-btn" onclick="pressDigit('5')">5</button>
-      <button type="button" class="key-btn" onclick="pressDigit('6')">6</button>
-      <button type="button" class="key-btn" onclick="pressDigit('7')">7</button>
-      <button type="button" class="key-btn" onclick="pressDigit('8')">8</button>
-      <button type="button" class="key-btn" onclick="pressDigit('9')">9</button>
-      <button type="button" class="key-btn clear" onclick="clearPin()">مسح</button>
-      <button type="button" class="key-btn" onclick="pressDigit('0')">0</button>
-      <button type="button" class="key-btn action" onclick="backspacePin()">⌫</button>
-    </div>
-  </div>
+<div class="header">
+    <h1>🍯 عسل مناحل أحمد بن صبحي</h1>
+    <p>لوحة متابعة مبيعات الفروع الستة لحظة بلحظة</p>
 </div>
 
-<div id="appContent">
-  <header>
-    <div class="header-title">
-      <h1>🍯 عسل مناحل أحمد بن صبحي</h1>
-      <p>لوحة متابعة مبيعات الفروع والمصنع لحظة بلحظة</p>
-    </div>
-    <button type="button" class="lock-btn" onclick="lockApp()">🔒 قفل</button>
-  </header>
-
-  <div class="container">
-    <div class="filter-card">
-      <div class="mode-tabs">
-        <button id="btnDayMode" class="mode-btn active" onclick="setMode('day')">📅 تقرير يوم محدد</button>
-        <button id="btnMonthMode" class="mode-btn" onclick="setMode('month')">📆 تقرير الشهر بالكامل</button>
-      </div>
-
-      <div class="filter-row">
-        <div>
-          <label>🏢 اختر الفرع:</label>
-          <select id="branchSelect" onchange="loadData()">
-            <option value="ALL">🌐 كل الفروع الستة المجمعة</option>
-            <option value="فرع مدينة نصر (عباس العقاد)">فرع مدينة نصر (عباس العقاد)</option>
-            <option value="الفرع الرئيسي - 6 أكتوبر (جيل 2000)">الفرع الرئيسي - 6 أكتوبر (جيل 2000)</option>
-            <option value="فرع 6 أكتوبر (الحي الأول)">فرع 6 أكتوبر (الحي الأول)</option>
-            <option value="فرع المقطم">فرع المقطم</option>
-            <option value="فرع الغربية (طنطا)">فرع الغربية (طنطا)</option>
-            <option value="فرع المنوفية">فرع المنوفية</option>
-          </select>
+<div class="container">
+    <div class="card">
+        <div class="tabs">
+            <button class="tab-btn active" id="btnDay" onclick="setMode('day')">📅 تقرير يوم محدد</button>
+            <button class="tab-btn" id="btnMonth" onclick="setMode('month')">📆 تقرير الشهر بالكامل</button>
         </div>
 
-        <div id="dayInputBox">
-          <label>📅 اختر التاريخ:</label>
-          <input type="date" id="dateInput" onchange="loadData()" />
+        <label>🏢 اختر الفرع:</label>
+        <select id="branchSelect" onchange="loadData()">
+            <option value="ALL">جميع الفروع (الإجمالي العام)</option>
+            <option value="فرع مدينة نصر (عباس العقاد)" selected>فرع مدينة نصر (عباس العقاد)</option>
+            <option value="فرع التجمع الخامس">فرع التجمع الخامس</option>
+            <option value="فرع المعادي">فرع المعادي</option>
+            <option value="فرع المهندسين">فرع المهندسين</option>
+            <option value="فرع الشيخ زايد">فرع الشيخ زايد</option>
+            <option value="فرع مصر الجديدة">فرع مصر الجديدة</option>
+        </select>
+
+        <div id="dayPickerWrap">
+            <label>📅 اختر التاريخ:</label>
+            <input type="date" id="dateInput" onchange="loadData()">
         </div>
 
-        <div id="monthInputBox" style="display:none;">
-          <label>📆 اختر الشهر:</label>
-          <input type="month" id="monthInput" onchange="loadData()" />
+        <div id="monthPickerWrap" style="display:none;">
+            <label>📆 اختر الشهر:</label>
+            <input type="month" id="monthInput" onchange="loadData()">
         </div>
-      </div>
 
-      <button class="refresh-btn" onclick="loadData()">🔄 تحديث البيانات الآن</button>
+        <button class="btn-refresh" onclick="loadData()">🔄 تحديث البيانات الآن</button>
     </div>
 
-    <div id="loadingBox" class="status-msg" style="display:none;">⏳ جاري جلب أحدث الأرقام من السحابة...</div>
+    <div class="kpi-main">
+        <div class="title" id="netLabel">صافي مبيعات اليوم</div>
+        <div class="val" id="netTotal">0.00 ج.م</div>
+    </div>
 
     <div class="kpi-grid">
-      <div class="kpi-card full">
-        <div class="kpi-title" id="totalLabel">صافي المبيعات</div>
-        <div class="kpi-val" id="kpiTotal">0.00 ج.م</div>
-        <div class="kpi-sub" id="kpiCountSub">إجمالي العمليات: 0</div>
-      </div>
-      <div class="kpi-card cash">
-        <div class="kpi-title">💵 مبيعات الكاش</div>
-        <div class="kpi-val green" id="kpiCash">0.00 ج.م</div>
-        <div class="kpi-sub" id="kpiCashCnt">0 فاتورة</div>
-      </div>
-      <div class="kpi-card insta">
-        <div class="kpi-title">📱 مبيعات انستا باي</div>
-        <div class="kpi-val indigo" id="kpiInsta">0.00 ج.م</div>
-        <div class="kpi-sub" id="kpiInstaCnt">0 فاتورة</div>
-      </div>
+        <div class="kpi-box cash">
+            <div class="title">💵 إجمالي الكاش (نقدي)</div>
+            <div class="val" id="cashTotal">0.00 ج.م</div>
+            <div class="sub" id="cashCount">0 فاتورة</div>
+        </div>
+        <div class="kpi-box insta">
+            <div class="title">📱 إجمالي انستا باي</div>
+            <div class="val" id="instaTotal">0.00 ج.م</div>
+            <div class="sub" id="instaCount">0 فاتورة</div>
+        </div>
+        <div class="kpi-box">
+            <div class="title">عدد الفواتير والعمليات</div>
+            <div class="val" id="invCount">0</div>
+        </div>
+        <div class="kpi-box">
+            <div class="title">متوسط قيمة الفاتورة</div>
+            <div class="val" id="avgInv">0.00 ج.م</div>
+        </div>
     </div>
 
-    <div class="section-card" id="branchesBreakdownCard">
-      <div class="section-title">📊 مبيعات كل فرع على حدة</div>
-      <table>
-        <thead>
-          <tr>
-            <th style="text-align:right;">الفرع</th>
-            <th>الفواتير</th>
-            <th>الإجمالي (ج.م)</th>
-          </tr>
-        </thead>
-        <tbody id="branchesTableBody"></tbody>
-      </table>
+    <div class="card">
+        <div class="sec-title">🍯 الأصناف الأكثر مبيعاً</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>الصنف</th>
+                    <th>الكمية</th>
+                    <th>الإجمالي (ج.م)</th>
+                </tr>
+            </thead>
+            <tbody id="topItemsBody">
+                <tr><td colspan="3" style="text-align:center;color:#94a3b8;">جاري التحميل...</td></tr>
+            </tbody>
+        </table>
     </div>
 
-    <div class="section-card">
-      <div class="section-title">🍯 الأصناف الأكثر مبيعاً</div>
-      <table>
-        <thead>
-          <tr>
-            <th style="text-align:right;">الصنف</th>
-            <th>الكمية</th>
-            <th>الإجمالي (ج.م)</th>
-          </tr>
-        </thead>
-        <tbody id="itemsTableBody"></tbody>
-      </table>
+    <div class="card">
+        <div class="sec-title">🧾 سجل الفواتير والمرتجعات</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>رقم</th>
+                    <th>الفرع / الدفع / الوقت</th>
+                    <th>القيمة</th>
+                </tr>
+            </thead>
+            <tbody id="salesBody">
+                <tr><td colspan="3" style="text-align:center;color:#94a3b8;">جاري التحميل...</td></tr>
+            </tbody>
+        </table>
     </div>
-
-    <div class="section-card">
-      <div class="section-title">🧾 سجل الفواتير (كاش / انستا باي)</div>
-      <table>
-        <thead>
-          <tr>
-            <th>رقم</th>
-            <th style="text-align:right;">الفرع / الدفع</th>
-            <th>القيمة</th>
-          </tr>
-        </thead>
-        <tbody id="salesTableBody"></tbody>
-      </table>
-    </div>
-
-    <div class="powered-footer">Powered by MK POS</div>
-  </div>
 </div>
 
 <script>
-  const DASHBOARD_PIN = "2026";
-  const SUPABASE_URL = "https://epsbpoxskcwupbpevvfy.supabase.co/rest/v1";
-  const SUPABASE_KEY = "sb_publishable_sPmgLe_cFVqPJD0kd6wMOA_NRyWnC3o";
+    const SUPABASE_URL = "https://epsbpoxskcwupbpevvfy.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVwc2Jwb3hza2N3dXBicGV2dmZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxNTY3ODIsImV4cCI6MjA3ODczMjc4Mn0.722c07R4hL_2w6n_4_tL_5Z_8Z_9Z_0Z_1Z_2Z_3Z_4";
+    // ملاحظة: استبدل SUPABASE_KEY بمفتاح anon key الحقيقي من ملف desktop_pos.py لديك إذا كان مختلفاً
 
-  const ALL_BRANCHES = [
-    "فرع مدينة نصر (عباس العقاد)",
-    "الفرع الرئيسي - 6 أكتوبر (جيل 2000)",
-    "فرع 6 أكتوبر (الحي الأول)",
-    "فرع المقطم",
-    "فرع الغربية (طنطا)",
-    "فرع المنوفية"
-  ];
+    let currentMode = 'day';
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('dateInput').value = today;
+    document.getElementById('monthInput').value = today.slice(0, 7);
 
-  let enteredPin = "";
-  let currentMode = "day";
-  let isUnlocked = false;
-
-  function updatePinDots() {
-    document.querySelectorAll("#pinDots .pin-dot").forEach((dot, idx) => {
-      dot.classList.toggle("filled", idx < enteredPin.length);
-    });
-  }
-
-  function pressDigit(digit) {
-    if (enteredPin.length >= 4) return;
-    document.getElementById("pinError").innerText = "";
-    enteredPin += digit;
-    updatePinDots();
-    if (enteredPin.length === 4) setTimeout(verifyPin, 120);
-  }
-
-  function backspacePin() {
-    if (enteredPin.length > 0) {
-      enteredPin = enteredPin.slice(0, -1);
-      updatePinDots();
+    function setMode(mode) {
+        currentMode = mode;
+        document.getElementById('btnDay').classList.toggle('active', mode === 'day');
+        document.getElementById('btnMonth').classList.toggle('active', mode === 'month');
+        document.getElementById('dayPickerWrap').style.display = mode === 'day' ? 'block' : 'none';
+        document.getElementById('monthPickerWrap').style.display = mode === 'month' ? 'block' : 'none';
+        loadData();
     }
-  }
 
-  function clearPin() {
-    enteredPin = "";
-    document.getElementById("pinError").innerText = "";
-    updatePinDots();
-  }
-
-  function verifyPin() {
-    if (enteredPin === DASHBOARD_PIN) {
-      sessionStorage.setItem("bensobhy_pin_ok", "1");
-      unlockApp();
-    } else {
-      const card = document.getElementById("pinCard");
-      document.getElementById("pinError").innerText = "❌ الرقم السري غير صحيح، حاول مرة أخرى";
-      card.classList.remove("shake");
-      void card.offsetWidth;
-      card.classList.add("shake");
-      enteredPin = "";
-      updatePinDots();
+    async function supaGet(path) {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+            headers: {
+                "apikey": SUPABASE_KEY,
+                "Authorization": `Bearer ${SUPABASE_KEY}`
+            }
+        });
+        return await res.json();
     }
-  }
 
-  function unlockApp() {
-    isUnlocked = true;
-    document.getElementById("pinOverlay").style.display = "none";
-    document.getElementById("appContent").style.display = "block";
-    initDatesAndLoad();
-  }
+    async function loadData() {
+        const branch = document.getElementById('branchSelect').value;
+        const dateVal = document.getElementById('dateInput').value;
+        const monthVal = document.getElementById('monthInput').value;
 
-  function lockApp() {
-    isUnlocked = false;
-    enteredPin = "";
-    updatePinDots();
-    document.getElementById("pinError").innerText = "";
-    sessionStorage.removeItem("bensobhy_pin_ok");
-    document.getElementById("appContent").style.display = "none";
-    document.getElementById("pinOverlay").style.display = "flex";
-  }
+        document.getElementById('netLabel').innerText = currentMode === 'day'
+            ? `صافي مبيعات يوم (${dateVal})`
+            : `صافي مبيعات شهر (${monthVal})`;
 
-  document.addEventListener("keydown", function (e) {
-    if (isUnlocked) return;
-    if (e.key >= "0" && e.key <= "9") pressDigit(e.key);
-    else if (e.key === "Backspace") backspacePin();
-    else if (e.key === "Escape" || e.key === "Delete") clearPin();
-  });
-
-  window.onload = function () {
-    if (sessionStorage.getItem("bensobhy_pin_ok") === "1") unlockApp();
-  };
-
-  function initDatesAndLoad() {
-    const now = new Date();
-    const yyyy = now.getFullYear();
-    const mm = String(now.getMonth() + 1).padStart(2, "0");
-    const dd = String(now.getDate()).padStart(2, "0");
-    if (!document.getElementById("dateInput").value) document.getElementById("dateInput").value = `${yyyy}-${mm}-${dd}`;
-    if (!document.getElementById("monthInput").value) document.getElementById("monthInput").value = `${yyyy}-${mm}`;
-    loadData();
-  }
-
-  function setMode(mode) {
-    currentMode = mode;
-    document.getElementById("btnDayMode").classList.toggle("active", mode === "day");
-    document.getElementById("btnMonthMode").classList.toggle("active", mode === "month");
-    document.getElementById("dayInputBox").style.display = mode === "day" ? "block" : "none";
-    document.getElementById("monthInputBox").style.display = mode === "month" ? "block" : "none";
-    loadData();
-  }
-
-  async function supaGet(endpoint) {
-    const res = await fetch(`${SUPABASE_URL}/${endpoint}`, {
-      headers: {
-        "apikey": SUPABASE_KEY,
-        "Authorization": `Bearer ${SUPABASE_KEY}`,
-        "Content-Type": "application/json"
-      }
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return await res.json();
-  }
-
-  async function loadData() {
-    if (!isUnlocked) return;
-    const loading = document.getElementById("loadingBox");
-    loading.style.display = "block";
-
-    const branch = document.getElementById("branchSelect").value;
-    const dayVal = document.getElementById("dateInput").value;
-    const monthVal = document.getElementById("monthInput").value;
-
-    try {
-      let query = "select=*";
-      if (currentMode === "day") {
-        query += `&sale_date=eq.${dayVal}`;
-        document.getElementById("totalLabel").innerText = `صافي مبيعات يوم (${dayVal})`;
-      } else {
-        query += `&sale_date=gte.${monthVal}-01&sale_date=lte.${monthVal}-31`;
-        document.getElementById("totalLabel").innerText = `صافي مبيعات شهر (${monthVal})`;
-      }
-
-      if (branch !== "ALL") query += `&branch_name=eq.${encodeURIComponent(branch)}`;
-      query += "&order=id.desc";
-
-      const sales = await supaGet(`cloud_sales?${query}`);
-
-      const totalAmount = sales.reduce((sum, s) => sum + parseFloat(s.total_amount || 0), 0);
-      const cashSales = sales.filter(s => (s.payment_method || "كاش") === "كاش");
-      const instaSales = sales.filter(s => (s.payment_method || "") === "انستا باي");
-      const cashTotal = cashSales.reduce((sum, s) => sum + parseFloat(s.total_amount || 0), 0);
-      const instaTotal = instaSales.reduce((sum, s) => sum + parseFloat(s.total_amount || 0), 0);
-
-      document.getElementById("kpiTotal").innerText = `${totalAmount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ج.م`;
-      document.getElementById("kpiCountSub").innerText = `إجمالي الفواتير: ${sales.length}`;
-
-      document.getElementById("kpiCash").innerText = `${cashTotal.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ج.م`;
-      document.getElementById("kpiCashCnt").innerText = `${cashSales.length} فاتورة`;
-
-      document.getElementById("kpiInsta").innerText = `${instaTotal.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ج.م`;
-      document.getElementById("kpiInstaCnt").innerText = `${instaSales.length} فاتورة`;
-
-      const breakdownCard = document.getElementById("branchesBreakdownCard");
-      if (branch === "ALL") {
-        breakdownCard.style.display = "block";
-        const bStats = {};
-        ALL_BRANCHES.forEach(b => bStats[b] = { cnt: 0, tot: 0 });
-        sales.forEach(s => {
-          const bName = s.branch_name || "غير محدد";
-          if (!bStats[bName]) bStats[bName] = { cnt: 0, tot: 0 };
-          bStats[bName].cnt += 1;
-          bStats[bName].tot += parseFloat(s.total_amount || 0);
-        });
-
-        const bBody = document.getElementById("branchesTableBody");
-        bBody.innerHTML = "";
-        Object.entries(bStats)
-          .sort((a, b) => b[1].tot - a[1].tot)
-          .forEach(([bName, st]) => {
-            bBody.innerHTML += `<tr><td class="right">${bName}</td><td>${st.cnt}</td><td class="pos">${st.tot.toFixed(2)}</td></tr>`;
-          });
-      } else {
-        breakdownCard.style.display = "none";
-      }
-
-      const itemsBody = document.getElementById("itemsTableBody");
-      itemsBody.innerHTML = "";
-      if (sales.length > 0) {
-        const ids = sales.slice(0, 200).map(s => s.local_sale_id).join(",");
-        let itemsQuery = `select=branch_name,product_name,quantity,subtotal&local_sale_id=in.(${ids})`;
-        if (branch !== "ALL") itemsQuery += `&branch_name=eq.${encodeURIComponent(branch)}`;
-        const items = await supaGet(`cloud_sale_items?${itemsQuery}`);
-
-        const itemMap = {};
-        items.forEach(it => {
-          const name = it.product_name;
-          if (!itemMap[name]) itemMap[name] = { qty: 0, val: 0 };
-          itemMap[name].qty += parseFloat(it.quantity || 0);
-          itemMap[name].val += parseFloat(it.subtotal || 0);
-        });
-
-        const sortedItems = Object.entries(itemMap).sort((a, b) => b[1].val - a[1].val);
-        if (sortedItems.length === 0) {
-          itemsBody.innerHTML = `<tr><td colspan="3">لا توجد أصناف مسجلة</td></tr>`;
-        } else {
-          sortedItems.forEach(([name, data]) => {
-            itemsBody.innerHTML += `<tr><td class="right">${name}</td><td>${Number(data.qty.toFixed(3))}</td><td class="pos">${data.val.toFixed(2)}</td></tr>`;
-          });
+        let query = `cloud_sales?select=*&order=id.desc`;
+        if (branch !== 'ALL') {
+            query += `&branch_name=eq.${encodeURIComponent(branch)}`;
         }
-      } else {
-        itemsBody.innerHTML = `<tr><td colspan="3">لا توجد مبيعات في هذه الفترة</td></tr>`;
-      }
+        if (currentMode === 'day') {
+            query += `&sale_date=eq.${dateVal}`;
+        } else {
+            query += `&sale_date=like.${monthVal}*`;
+        }
 
-      const salesBody = document.getElementById("salesTableBody");
-      salesBody.innerHTML = "";
-      if (sales.length === 0) {
-        salesBody.innerHTML = `<tr><td colspan="3">لا توجد فواتير مسجلة</td></tr>`;
-      } else {
-        sales.slice(0, 50).forEach(s => {
-          const val = parseFloat(s.total_amount || 0);
-          const cls = val < 0 ? "neg" : "pos";
-          const pm = s.payment_method || "كاش";
-          const pmBadge = pm === "انستا باي" ? `<span class="badge-insta">📱 انستا باي</span>` : `<span class="badge-cash">💵 كاش</span>`;
-          const timePart = (s.created_at || "").slice(11, 16);
-          const noteStr = s.notes ? ` - <small style="color:#64748b">${s.notes}</small>` : "";
-          salesBody.innerHTML += `
-            <tr>
-              <td>#${s.local_sale_id}</td>
-              <td class="right">
-                <span class="badge-branch">${s.branch_name || ""}</span> ${pmBadge}
-                <div style="font-size:11px; color:#64748b; margin-top:2px;">الساعة ${timePart}${noteStr}</div>
-              </td>
-              <td class="${cls}">${val.toFixed(2)}</td>
-            </tr>`;
-        });
-      }
-    } catch (err) {
-      console.error(err);
-      alert("تعذر الاتصال بالسحابة. تأكد من اتصال الإنترنت.");
-    } finally {
-      loading.style.display = "none";
+        try {
+            const sales = await supaGet(query);
+            let net = 0, cashSum = 0, cashCnt = 0, instaSum = 0, instaCnt = 0, validSalesCount = 0;
+
+            const salesBody = document.getElementById('salesBody');
+            salesBody.innerHTML = '';
+
+            if (!Array.isArray(sales) || sales.length === 0) {
+                salesBody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#94a3b8;">لا توجد فواتير مسجلة في هذه الفترة</td></tr>';
+            } else {
+                sales.forEach((s, idx) => {
+                    const amt = parseFloat(s.total_amount || 0);
+                    const pm = (s.payment_method || 'نقدي (كاش)').trim();
+                    const isInsta = pm.includes('انستا') || pm.toLowerCase().includes('insta');
+
+                    net += amt;
+                    if (amt > 0) validSalesCount++;
+                    if (isInsta) {
+                        instaSum += amt;
+                        if (amt > 0) instaCnt++;
+                    } else {
+                        cashSum += amt;
+                        if (amt > 0) cashCnt++;
+                    }
+
+                    const payBadge = isInsta
+                        ? `<span class="badge-pay pay-insta">📱 انستا باي</span>`
+                        : `<span class="badge-pay pay-cash">💵 كاش</span>`;
+
+                    const timeStr = s.created_at ? s.created_at.slice(11, 16) : '';
+                    const numLabel = s.local_invoice_id ? `#${s.local_invoice_id}` : `#${sales.length - idx}`;
+
+                    salesBody.innerHTML += `
+                        <tr>
+                            <td style="font-weight:700;">${numLabel}</td>
+                            <td>
+                                <div class="badge-branch">${s.branch_name || ''}</div><br>
+                                ${payBadge}
+                                <span class="time-txt"> • الساعة ${timeStr}</span>
+                            </td>
+                            <td class="${amt >= 0 ? 'amount-pos' : 'amount-neg'}">${amt.toFixed(2)}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            document.getElementById('netTotal').innerText = `${net.toFixed(2)} ج.م`;
+            document.getElementById('cashTotal').innerText = `${cashSum.toFixed(2)} ج.م`;
+            document.getElementById('cashCount').innerText = `${cashCnt} فاتورة`;
+            document.getElementById('instaTotal').innerText = `${instaSum.toFixed(2)} ج.م`;
+            document.getElementById('instaCount').innerText = `${instaCnt} فاتورة`;
+            document.getElementById('invCount').innerText = sales.length || 0;
+            document.getElementById('avgInv').innerText = validSalesCount > 0 ? `${(net / validSalesCount).toFixed(2)} ج.م` : '0.00 ج.م';
+
+            // جلب الأصناف الأكثر مبيعاً
+            let itemsQuery = `cloud_sale_items?select=*`;
+            if (branch !== 'ALL') itemsQuery += `&branch_name=eq.${encodeURIComponent(branch)}`;
+            if (currentMode === 'day') itemsQuery += `&sale_date=eq.${dateVal}`;
+            else itemsQuery += `&sale_date=like.${monthVal}*`;
+
+            const items = await supaGet(itemsQuery);
+            const map = {};
+            if (Array.isArray(items)) {
+                items.forEach(it => {
+                    const name = it.product_name || 'صنف';
+                    if (!map[name]) map[name] = { qty: 0, total: 0 };
+                    map[name].qty += parseFloat(it.quantity || 0);
+                    map[name].total += parseFloat(it.subtotal || 0);
+                });
+            }
+
+            const sorted = Object.entries(map).sort((a, b) => b[1].total - a[1].total);
+            const topBody = document.getElementById('topItemsBody');
+            topBody.innerHTML = '';
+            if (sorted.length === 0) {
+                topBody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#94a3b8;">لا توجد أصناف مباعة</td></tr>';
+            } else {
+                sorted.forEach(([name, info]) => {
+                    topBody.innerHTML += `
+                        <tr>
+                            <td style="font-weight:700;">${name}</td>
+                            <td>${info.qty}</td>
+                            <td class="amount-pos">${info.total.toFixed(2)}</td>
+                        </tr>
+                    `;
+                });
+            }
+        } catch (err) {
+            console.error(err);
+        }
     }
-  }
+
+    loadData();
+    setInterval(loadData, 20000);
 </script>
+
 </body>
 </html>
