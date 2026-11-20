@@ -14,7 +14,12 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
         .header h1 { font-size: 1.35rem; font-weight: 800; margin-bottom: 4px; }
-        .header p { font-size: 0.85rem; opacity: 0.9; }
+        .header p { font-size: 0.85rem; opacity: 0.92; }
+        .sync-badge {
+            display: inline-block; margin-top: 8px; padding: 3px 12px;
+            border-radius: 20px; font-size: 0.75rem; font-weight: 700;
+            background: rgba(255,255,255,0.18); color: #fef3c7;
+        }
         .container { max-width: 650px; margin: 15px auto; padding: 0 12px; }
         .card {
             background: #fff; border-radius: 14px; padding: 16px;
@@ -40,7 +45,7 @@
             background: #ecfdf5; border: 1.5px solid #a7f3d0; text-align: center;
             padding: 18px; border-radius: 14px; margin-bottom: 12px;
         }
-        .kpi-main .title { font-size: 0.9rem; color: #065f46; font-weight: 700; }
+        .kpi-main .title { font-size: 0.92rem; color: #065f46; font-weight: 700; }
         .kpi-main .val { font-size: 2rem; font-weight: 800; color: #059669; margin-top: 4px; }
         .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
         .kpi-box {
@@ -49,13 +54,13 @@
         }
         .kpi-box.cash { background: #eff6ff; border-color: #bfdbfe; }
         .kpi-box.insta { background: #f5f3ff; border-color: #ddd6fe; }
-        .kpi-box .title { font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 4px; }
+        .kpi-box .title { font-size: 0.82rem; font-weight: 700; color: #475569; margin-bottom: 4px; }
         .kpi-box.cash .title { color: #1e40af; }
         .kpi-box.insta .title { color: #5b21b6; }
         .kpi-box .val { font-size: 1.25rem; font-weight: 800; color: #0f172a; }
         .kpi-box.cash .val { color: #1d4ed8; }
         .kpi-box.insta .val { color: #6d28d9; }
-        .kpi-box .sub { font-size: 0.75rem; color: #64748b; margin-top: 2px; font-weight: 600; }
+        .kpi-box .sub { font-size: 0.75rem; color: #64748b; margin-top: 3px; font-weight: 600; }
         .sec-title { font-size: 1rem; font-weight: 800; color: #1e293b; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
         table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
         th { background: #fef3c7; color: #78350f; padding: 10px 8px; text-align: right; font-weight: 700; }
@@ -70,8 +75,13 @@
         }
         .pay-cash { background: #dbeafe; color: #1e40af; }
         .pay-insta { background: #ede9fe; color: #5b21b6; }
-        .amount-pos { color: #059669; font-weight: 800; }
-        .amount-neg { color: #dc2626; font-weight: 800; }
+        .badge-ret {
+            display: inline-block; background: #fee2e2; color: #b91c1c;
+            padding: 2px 7px; border-radius: 6px; font-size: 0.72rem; font-weight: 800; margin-right: 4px;
+        }
+        .note-txt { display: block; font-size: 0.73rem; color: #64748b; margin-top: 3px; }
+        .amount-pos { color: #059669; font-weight: 800; white-space: nowrap; }
+        .amount-neg { color: #dc2626; font-weight: 800; white-space: nowrap; }
         .time-txt { font-size: 0.75rem; color: #64748b; }
     </style>
 </head>
@@ -80,6 +90,7 @@
 <div class="header">
     <h1>🍯 عسل مناحل أحمد بن صبحي</h1>
     <p>لوحة متابعة مبيعات الفروع الستة لحظة بلحظة</p>
+    <div class="sync-badge" id="syncStatus">⏳ جاري الاتصال بالسحابة...</div>
 </div>
 
 <div class="container">
@@ -91,13 +102,13 @@
 
         <label>🏢 اختر الفرع:</label>
         <select id="branchSelect" onchange="loadData()">
-            <option value="ALL">جميع الفروع (الإجمالي العام)</option>
-            <option value="فرع مدينة نصر (عباس العقاد)" selected>فرع مدينة نصر (عباس العقاد)</option>
-            <option value="فرع التجمع الخامس">فرع التجمع الخامس</option>
-            <option value="فرع المعادي">فرع المعادي</option>
-            <option value="فرع المهندسين">فرع المهندسين</option>
-            <option value="فرع الشيخ زايد">فرع الشيخ زايد</option>
-            <option value="فرع مصر الجديدة">فرع مصر الجديدة</option>
+            <option value="ALL" selected>جميع الفروع (الإجمالي العام)</option>
+            <option value="الفرع الرئيسي - 6 أكتوبر (جيل 2000)">الفرع الرئيسي - 6 أكتوبر (جيل 2000)</option>
+            <option value="فرع 6 أكتوبر (الحي الأول)">فرع 6 أكتوبر (الحي الأول)</option>
+            <option value="فرع مدينة نصر (عباس العقاد)">فرع مدينة نصر (عباس العقاد)</option>
+            <option value="فرع المقطم">فرع المقطم</option>
+            <option value="فرع الغربية (طنطا)">فرع الغربية (طنطا)</option>
+            <option value="فرع المنوفية">فرع المنوفية</option>
         </select>
 
         <div id="dayPickerWrap">
@@ -120,22 +131,24 @@
 
     <div class="kpi-grid">
         <div class="kpi-box cash">
-            <div class="title">💵 إجمالي الكاش (نقدي)</div>
+            <div class="title">💵 صافي الكاش (الدرج)</div>
             <div class="val" id="cashTotal">0.00 ج.م</div>
             <div class="sub" id="cashCount">0 فاتورة</div>
         </div>
         <div class="kpi-box insta">
-            <div class="title">📱 إجمالي انستا باي</div>
+            <div class="title">📱 صافي انستا باي</div>
             <div class="val" id="instaTotal">0.00 ج.م</div>
             <div class="sub" id="instaCount">0 فاتورة</div>
         </div>
         <div class="kpi-box">
-            <div class="title">عدد الفواتير والعمليات</div>
+            <div class="title">إجمالي الفواتير</div>
             <div class="val" id="invCount">0</div>
+            <div class="sub" id="retCountSub">0 مرتجع</div>
         </div>
         <div class="kpi-box">
             <div class="title">متوسط قيمة الفاتورة</div>
             <div class="val" id="avgInv">0.00 ج.م</div>
+            <div class="sub">صافي البيع</div>
         </div>
     </div>
 
@@ -174,11 +187,19 @@
 
 <script>
     const SUPABASE_URL = "https://epsbpoxskcwupbpevvfy.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVwc2Jwb3hza2N3dXBicGV2dmZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxNTY3ODIsImV4cCI6MjA3ODczMjc4Mn0.722c07R4hL_2w6n_4_tL_5Z_8Z_9Z_0Z_1Z_2Z_3Z_4";
-    // ملاحظة: استبدل SUPABASE_KEY بمفتاح anon key الحقيقي من ملف desktop_pos.py لديك إذا كان مختلفاً
+    const SUPABASE_KEY = "sb_publishable_sPmgLe_cFVqPJD0kd6wMOA_NRyWnC3o";
 
     let currentMode = 'day';
-    const today = new Date().toISOString().split('T')[0];
+
+    function getLocalToday() {
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = String(now.getMonth() + 1).padStart(2, '0');
+        const d = String(now.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+    }
+
+    const today = getLocalToday();
     document.getElementById('dateInput').value = today;
     document.getElementById('monthInput').value = today.slice(0, 7);
 
@@ -191,13 +212,28 @@
         loadData();
     }
 
+    function formatCairoTime(ts) {
+        if (!ts) return '';
+        try {
+            const dt = new Date(ts);
+            if (!isNaN(dt.getTime())) {
+                return dt.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+            }
+        } catch (e) {}
+        return ts.slice(11, 16);
+    }
+
     async function supaGet(path) {
         const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
             headers: {
                 "apikey": SUPABASE_KEY,
-                "Authorization": `Bearer ${SUPABASE_KEY}`
+                "Authorization": `Bearer ${SUPABASE_KEY}`,
+                "Content-Type": "application/json"
             }
         });
+        if (!res.ok) {
+            throw new Error(`HTTP ${res.status}`);
+        }
         return await res.json();
     }
 
@@ -205,6 +241,7 @@
         const branch = document.getElementById('branchSelect').value;
         const dateVal = document.getElementById('dateInput').value;
         const monthVal = document.getElementById('monthInput').value;
+        const statusEl = document.getElementById('syncStatus');
 
         document.getElementById('netLabel').innerText = currentMode === 'day'
             ? `صافي مبيعات يوم (${dateVal})`
@@ -222,7 +259,10 @@
 
         try {
             const sales = await supaGet(query);
-            let net = 0, cashSum = 0, cashCnt = 0, instaSum = 0, instaCnt = 0, validSalesCount = 0;
+            let net = 0;
+            let cashSum = 0, cashCnt = 0, cashRetCnt = 0;
+            let instaSum = 0, instaCnt = 0, instaRetCnt = 0;
+            let validSalesCount = 0, totalReturnsCount = 0;
 
             const salesBody = document.getElementById('salesBody');
             salesBody.innerHTML = '';
@@ -232,24 +272,34 @@
             } else {
                 sales.forEach((s, idx) => {
                     const amt = parseFloat(s.total_amount || 0);
-                    const pm = (s.payment_method || 'نقدي (كاش)').trim();
+                    const isReturn = amt < 0;
+                    const pm = (s.payment_method || 'كاش').trim();
                     const isInsta = pm.includes('انستا') || pm.toLowerCase().includes('insta');
 
                     net += amt;
-                    if (amt > 0) validSalesCount++;
+                    if (isReturn) {
+                        totalReturnsCount++;
+                    } else if (amt > 0) {
+                        validSalesCount++;
+                    }
+
                     if (isInsta) {
                         instaSum += amt;
-                        if (amt > 0) instaCnt++;
+                        if (isReturn) instaRetCnt++;
+                        else if (amt > 0) instaCnt++;
                     } else {
                         cashSum += amt;
-                        if (amt > 0) cashCnt++;
+                        if (isReturn) cashRetCnt++;
+                        else if (amt > 0) cashCnt++;
                     }
 
                     const payBadge = isInsta
                         ? `<span class="badge-pay pay-insta">📱 انستا باي</span>`
                         : `<span class="badge-pay pay-cash">💵 كاش</span>`;
 
-                    const timeStr = s.created_at ? s.created_at.slice(11, 16) : '';
+                    const retBadge = isReturn ? `<span class="badge-ret">↩️ مرتجع</span>` : '';
+                    const noteHtml = s.notes ? `<span class="note-txt">📝 ${s.notes}</span>` : '';
+                    const timeStr = formatCairoTime(s.created_at);
                     const numLabel = s.local_invoice_id ? `#${s.local_invoice_id}` : `#${sales.length - idx}`;
 
                     salesBody.innerHTML += `
@@ -257,8 +307,9 @@
                             <td style="font-weight:700;">${numLabel}</td>
                             <td>
                                 <div class="badge-branch">${s.branch_name || ''}</div><br>
-                                ${payBadge}
-                                <span class="time-txt"> • الساعة ${timeStr}</span>
+                                ${payBadge}${retBadge}
+                                ${timeStr ? `<span class="time-txt"> • ${timeStr}</span>` : ''}
+                                ${noteHtml}
                             </td>
                             <td class="${amt >= 0 ? 'amount-pos' : 'amount-neg'}">${amt.toFixed(2)}</td>
                         </tr>
@@ -268,11 +319,20 @@
 
             document.getElementById('netTotal').innerText = `${net.toFixed(2)} ج.م`;
             document.getElementById('cashTotal').innerText = `${cashSum.toFixed(2)} ج.م`;
-            document.getElementById('cashCount').innerText = `${cashCnt} فاتورة`;
+            document.getElementById('cashCount').innerText = cashRetCnt > 0
+                ? `${cashCnt} بيع • ${cashRetCnt} مرتجع`
+                : `${cashCnt} فاتورة`;
+
             document.getElementById('instaTotal').innerText = `${instaSum.toFixed(2)} ج.م`;
-            document.getElementById('instaCount').innerText = `${instaCnt} فاتورة`;
-            document.getElementById('invCount').innerText = sales.length || 0;
-            document.getElementById('avgInv').innerText = validSalesCount > 0 ? `${(net / validSalesCount).toFixed(2)} ج.م` : '0.00 ج.م';
+            document.getElementById('instaCount').innerText = instaRetCnt > 0
+                ? `${instaCnt} بيع • ${instaRetCnt} مرتجع`
+                : `${instaCnt} فاتورة`;
+
+            document.getElementById('invCount').innerText = validSalesCount;
+            document.getElementById('retCountSub').innerText = `${totalReturnsCount} مرتجع`;
+            document.getElementById('avgInv').innerText = validSalesCount > 0
+                ? `${(net / validSalesCount).toFixed(2)} ج.م`
+                : '0.00 ج.م';
 
             // جلب الأصناف الأكثر مبيعاً
             let itemsQuery = `cloud_sale_items?select=*`;
@@ -291,24 +351,32 @@
                 });
             }
 
-            const sorted = Object.entries(map).sort((a, b) => b[1].total - a[1].total);
+            const sorted = Object.entries(map)
+                .filter(([, info]) => info.qty > 0 || info.total > 0)
+                .sort((a, b) => b[1].total - a[1].total);
+
             const topBody = document.getElementById('topItemsBody');
             topBody.innerHTML = '';
             if (sorted.length === 0) {
                 topBody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#94a3b8;">لا توجد أصناف مباعة</td></tr>';
             } else {
                 sorted.forEach(([name, info]) => {
+                    const cleanQty = Math.round(info.qty * 100) / 100;
                     topBody.innerHTML += `
                         <tr>
                             <td style="font-weight:700;">${name}</td>
-                            <td>${info.qty}</td>
+                            <td>${cleanQty}</td>
                             <td class="amount-pos">${info.total.toFixed(2)}</td>
                         </tr>
                     `;
                 });
             }
+
+            const nowTime = new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            statusEl.innerText = `🟢 متصل بالسحابة • آخر تحديث ${nowTime}`;
         } catch (err) {
             console.error(err);
+            statusEl.innerText = `🔴 تعذر الاتصال بالسحابة (${err.message})`;
         }
     }
 
