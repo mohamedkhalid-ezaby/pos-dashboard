@@ -80,6 +80,7 @@
             padding: 2px 7px; border-radius: 6px; font-size: 0.72rem; font-weight: 800; margin-right: 4px;
         }
         .note-txt { display: block; font-size: 0.73rem; color: #64748b; margin-top: 3px; }
+        .unit-txt { font-size: 0.75rem; color: #64748b; font-weight: 600; }
         .amount-pos { color: #059669; font-weight: 800; white-space: nowrap; }
         .amount-neg { color: #dc2626; font-weight: 800; white-space: nowrap; }
         .time-txt { font-size: 0.75rem; color: #64748b; }
@@ -267,6 +268,10 @@
             const salesBody = document.getElementById('salesBody');
             salesBody.innerHTML = '';
 
+            // مفاتيح ربط الفواتير بأصنافها في جدول cloud_sale_items
+            const validSaleKeys = new Set();
+            const saleIdsSet = new Set();
+
             if (!Array.isArray(sales) || sales.length === 0) {
                 salesBody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#94a3b8;">لا توجد فواتير مسجلة في هذه الفترة</td></tr>';
             } else {
@@ -275,6 +280,12 @@
                     const isReturn = amt < 0;
                     const pm = (s.payment_method || 'كاش').trim();
                     const isInsta = pm.includes('انستا') || pm.toLowerCase().includes('insta');
+                    const saleId = s.local_sale_id ?? s.local_invoice_id;
+
+                    if (saleId !== null && saleId !== undefined) {
+                        validSaleKeys.add(`${s.branch_name}__${saleId}`);
+                        saleIdsSet.add(saleId);
+                    }
 
                     net += amt;
                     if (isReturn) {
@@ -300,7 +311,7 @@
                     const retBadge = isReturn ? `<span class="badge-ret">↩️ مرتجع</span>` : '';
                     const noteHtml = s.notes ? `<span class="note-txt">📝 ${s.notes}</span>` : '';
                     const timeStr = formatCairoTime(s.created_at);
-                    const numLabel = s.local_invoice_id ? `#${s.local_invoice_id}` : `#${sales.length - idx}`;
+                    const numLabel = saleId ? `#${saleId}` : `#${sales.length - idx}`;
 
                     salesBody.innerHTML += `
                         <tr>
@@ -334,42 +345,64 @@
                 ? `${(net / validSalesCount).toFixed(2)} ج.م`
                 : '0.00 ج.م';
 
-            // جلب الأصناف الأكثر مبيعاً
-            let itemsQuery = `cloud_sale_items?select=*`;
-            if (branch !== 'ALL') itemsQuery += `&branch_name=eq.${encodeURIComponent(branch)}`;
-            if (currentMode === 'day') itemsQuery += `&sale_date=eq.${dateVal}`;
-            else itemsQuery += `&sale_date=like.${monthVal}*`;
+            // جلب الأصناف الأكثر مبيعاً بربطها بأرقام فواتير الفترة (local_sale_id)
+            const topBody = document.getElementById('topItemsBody');
+            const saleIds = Array.from(saleIdsSet);
 
-            const items = await supaGet(itemsQuery);
-            const map = {};
-            if (Array.isArray(items)) {
+            if (saleIds.length === 0) {
+                topBody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#94a3b8;">لا توجد أصناف مباعة في هذه الفترة</td></tr>';
+            } else {
+                const chunks = [];
+                for (let i = 0; i < saleIds.length; i += 150) {
+                    chunks.push(saleIds.slice(i, i + 150));
+                }
+
+                const itemResponses = await Promise.all(chunks.map(chunk => {
+                    let itemsQuery = `cloud_sale_items?select=*&local_sale_id=in.(${chunk.join(',')})`;
+                    if (branch !== 'ALL') {
+                        itemsQuery += `&branch_name=eq.${encodeURIComponent(branch)}`;
+                    }
+                    return supaGet(itemsQuery);
+                }));
+
+                const items = itemResponses.flat();
+                const map = {};
+
                 items.forEach(it => {
-                    const name = it.product_name || 'صنف';
-                    if (!map[name]) map[name] = { qty: 0, total: 0 };
+                    const itemSaleId = it.local_sale_id ?? it.local_invoice_id;
+                    if (!validSaleKeys.has(`${it.branch_name}__${itemSaleId}`)) return;
+
+                    const name = (it.product_name || 'صنف').trim();
+                    if (!map[name]) {
+                        map[name] = { qty: 0, total: 0, unit: (it.unit || '').trim() };
+                    }
                     map[name].qty += parseFloat(it.quantity || 0);
                     map[name].total += parseFloat(it.subtotal || 0);
+                    if (!map[name].unit && it.unit) {
+                        map[name].unit = it.unit.trim();
+                    }
                 });
-            }
 
-            const sorted = Object.entries(map)
-                .filter(([, info]) => info.qty > 0 || info.total > 0)
-                .sort((a, b) => b[1].total - a[1].total);
+                const sorted = Object.entries(map)
+                    .filter(([, info]) => info.qty > 0 || info.total > 0)
+                    .sort((a, b) => b[1].total - a[1].total);
 
-            const topBody = document.getElementById('topItemsBody');
-            topBody.innerHTML = '';
-            if (sorted.length === 0) {
-                topBody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#94a3b8;">لا توجد أصناف مباعة</td></tr>';
-            } else {
-                sorted.forEach(([name, info]) => {
-                    const cleanQty = Math.round(info.qty * 100) / 100;
-                    topBody.innerHTML += `
-                        <tr>
-                            <td style="font-weight:700;">${name}</td>
-                            <td>${cleanQty}</td>
-                            <td class="amount-pos">${info.total.toFixed(2)}</td>
-                        </tr>
-                    `;
-                });
+                topBody.innerHTML = '';
+                if (sorted.length === 0) {
+                    topBody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#94a3b8;">لا توجد أصناف مباعة</td></tr>';
+                } else {
+                    sorted.forEach(([name, info]) => {
+                        const cleanQty = Math.round(info.qty * 100) / 100;
+                        const unitSpan = info.unit ? ` <span class="unit-txt">${info.unit}</span>` : '';
+                        topBody.innerHTML += `
+                            <tr>
+                                <td style="font-weight:700;">${name}</td>
+                                <td>${cleanQty}${unitSpan}</td>
+                                <td class="amount-pos">${info.total.toFixed(2)}</td>
+                            </tr>
+                        `;
+                    });
+                }
             }
 
             const nowTime = new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
